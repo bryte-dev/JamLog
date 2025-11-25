@@ -1,14 +1,17 @@
 import express from "express";
-import userRoutes from "./routes/userRoutes.js";
-import { PORT } from "./config/env.js";
+import prisma from "./models/prisma.js";
 
 const app = express();
-
 app.use(express.json());
 
-// test route
-app.use("/api", userRoutes);
+app.get("/", (req, res) => {
+  res.send("Backend en marche frérot 💪");
+});
 
-app.listen(PORT, () => {
-  console.log(`Backend démarré sur le port ${PORT}`);
+app.get("/test", async (req, res) => {
+  res.json({ message: "Route test OK" });
+});
+
+app.listen(3000, () => {
+  console.log("Backend démarré sur le port 3000 !");
 });
