@@ -1,6 +1,6 @@
 import { getAllUsers } from "../services/userService.js";
 
-export async function testUsers(req, res) {
+export async function Users(req, res) {
   try {
     const users = await getAllUsers();
     res.json(users);

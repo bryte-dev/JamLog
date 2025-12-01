@@ -8,8 +8,9 @@ app.get("/", (req, res) => {
   res.send("Backend en marche frérot 💪");
 });
 
-app.get("/test", async (req, res) => {
-  res.json({ message: "Route test OK" });
+app.get("/users", async (req, res) => {
+  const users = await prisma.user.findMany();
+  res.json(users);
 });
 
 app.listen(3000, () => {
