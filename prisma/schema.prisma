@@ -1,14 +1,118 @@
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  username     String
+  createdAt    DateTime  @default(now())
+
+  projectsOwned Project[] @relation("ProjectOwner")
+  memberships   ProjectMember[]
+  filesUploaded File[]
 }
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  code        String    @unique
+  description String?
+  type        String
+  createdAt   DateTime  @default(now())
+  ownerId     Int
+  owner       User      @relation("ProjectOwner", fields: [ownerId], references: [id])
+
+  members     ProjectMember[]
+  events      Event[]
+  songs       Song[]
+  files       File[]
+}
+
+model ProjectMember {
+  userId    Int
+  projectId Int
+  role      String
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@id([userId, projectId])
+}
+
+model Event {
+  id        Int      @id @default(autoincrement())
+  title     String
+  type      String
+  description String?
+  location  String?
+  eventDate DateTime
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  songEvents SongEvent[]
+  fileEvents FileEvent[]
+}
+
+model Song {
+  id        Int      @id @default(autoincrement())
+  title     String
+  type      String
+  progress  String?
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  songEvents SongEvent[]
+  fileSongs  FileSong[]
+}
+
+model SongEvent {
+  songId  Int
+  eventId Int
+
+  song  Song  @relation(fields: [songId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@id([songId, eventId])
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  name      String
+  url       String   @unique
+  type      String
+  projectId Int?
+  uploadedBy Int?
+  project   Project? @relation(fields: [projectId], references: [id])
+  uploader  User?    @relation(fields: [uploadedBy], references: [id])
+
+  fileSongs FileSong[]
+  fileEvents FileEvent[]
+}
+
+model FileSong {
+  fileId Int
+  songId Int
+
+  file File @relation(fields: [fileId], references: [id])
+  song Song @relation(fields: [songId], references: [id])
+
+  @@id([fileId, songId])
+}
+
+model FileEvent {
+  fileId  Int
+  eventId Int
+
+  file  File  @relation(fields: [fileId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@id([fileId, eventId])
+}
+

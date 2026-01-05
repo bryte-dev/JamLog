@@ -1,19 +1,16 @@
-import 'dotenv/config';
 import express from "express";
-import prisma from "./models/prisma.js";
+import cors from "cors";
 
 const app = express();
+
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Backend en marche frérot 💪");
+  res.json({ message: "JamLog API running 🚀" });
 });
 
-app.get("/users", async (req, res) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
-});
-
-app.listen(3000, () => {
-  console.log("Backend démarré sur le port 3000 !");
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
