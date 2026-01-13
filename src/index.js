@@ -4,9 +4,13 @@ import cors from "cors";
 
 const app = express();
 
-app.use(cors());
-
 app.use(express.json());
+
+app.use(cors({
+  origin: "http://192.168.100.15:8081",
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 app.use("/auth", authRoutes);
 
