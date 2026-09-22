@@ -1,617 +1,265 @@
-# JamLog Frontend
+# JamLog
 
-Application frontend de **JamLog**, une application destinée aux musiciens pour organiser leurs projets, morceaux, événements et ressources associées.
+JamLog is a backend application designed for musicians to organize their projects, songs, rehearsals, performances, recordings, and shared resources in one place.
 
-Ce dépôt contient l'application mobile et web basée sur Expo, React Native et TypeScript. Il est prévu pour communiquer avec le backend disponible dans le dépôt [`JamLog`](https://github.com/bryte-dev/JamLog).
+This repository contains the API layer for the JamLog ecosystem. It provides authentication, user management, and the base backend infrastructure that the frontend application connects to.
 
-> **État du projet : prototype en cours de développement**
+> Project status: early prototype / active development
 >
-> Le frontend contient actuellement la structure de navigation, les écrans d'inscription et de connexion ainsi qu'une première gestion du token d'authentification. L'interface principale de gestion musicale reste encore à développer.
+> The backend currently includes the main Express server, Prisma integration, PostgreSQL setup, and authentication routes. The project is still evolving toward a full music-project management platform.
 
 ---
 
-## Objectif du projet
+## Project goal
 
-JamLog a pour objectif d'aider les musiciens à organiser leur travail au même endroit.
+JamLog aims to help musicians centralize all the important parts of their creative work, including:
 
-L'application est prévue pour gérer progressivement :
+- user accounts;
+- music projects;
+- groups and collaborators;
+- songs / tracks;
+- song progress tracking;
+- rehearsals;
+- concerts;
+- recording sessions;
+- related files and shared resources.
 
-- les utilisateurs ;
-- les projets musicaux ;
-- les groupes et membres ;
-- les morceaux ;
-- la progression des morceaux ;
-- les répétitions ;
-- les concerts ;
-- les sessions d'enregistrement ;
-- les fichiers liés aux projets ;
-- les ressources partagées entre membres.
-
----
-
-## Stack technique
-
-- **React Native**
-- **Expo**
-- **TypeScript**
-- **Expo Router**
-- **React Navigation**
-- **Axios**
-- **Expo Secure Store**
-- **React Native Web**
-
-Le projet utilise Expo Router pour organiser les écrans à partir de la structure de dossiers du répertoire `app`.
+The long-term idea is to give bands, solo artists, and music teams a single place to manage their work and coordination.
 
 ---
 
-## Structure du projet
+## Tech stack
+
+- **Node.js**
+- **Express**
+- **JavaScript (ES modules)**
+- **Prisma**
+- **PostgreSQL**
+- **JWT authentication**
+- **bcrypt**
+- **CORS**
+- **dotenv**
+
+---
+
+## Repository structure
 
 ```text
-JamLogFrontEnd/
-├── JamLog-frontend/
-│   ├── app/
-│   │   ├── _layout.tsx
-│   │   ├── index.tsx
-│   │   │
-│   │   ├── auth/
-│   │   │   ├── authindex.tsx
-│   │   │   ├── login.tsx
-│   │   │   └── register.tsx
-│   │   │
-│   │   └── (app)/
-│   │       └── appindex.tsx
-│   │
-│   ├── src/
-│   │   ├── api/
-│   │   │   └── api.ts
-│   │   │
-│   │   ├── context/
-│   │   │   └── authContext.tsx
-│   │   │
-│   │   └── services/
-│   │       ├── authService.ts
-│   │       └── tokenService.ts
-│   │
-│   ├── assets/
-│   │   └── images/
-│   │
-│   ├── app.json
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── eslint.config.js
-│   └── README.md
-│
-├── .env
-├── project_structure.md
-└── LICENSE
+JamLog/
+├── prisma/
+│   └── (Prisma schema and database configuration)
+├── src/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── index.js
+│   └── ...
+├── .gitignore
+├── LICENSE
+├── package.json
+├── package-lock.json
+├── test-db.js
+└── README.md
 ```
 
 ---
 
-## Architecture de navigation
+## Architecture
 
-L'application utilise Expo Router.
+The backend is organized around a classic Express API structure:
 
-Le dossier `app` représente la structure de navigation.
+- `src/index.js` starts the server
+- `src/routes/` defines API routes
+- `src/controllers/` handles request logic
+- `src/services/` contains business logic
+- `src/models/` defines data models
+- Prisma handles database access and schema management
 
-### Écran racine
-
-Le fichier `app/index.tsx` vérifie si un token existe.
-
-- sans token : redirection vers l'espace d'authentification ;
-- avec token : redirection vers l'espace de l'application.
-
-### Layout principal
-
-Le fichier `app/_layout.tsx` fournit le contexte d'authentification à toute l'application.
-
-Il affiche :
-
-- la partie `auth` si l'utilisateur n'est pas connecté ;
-- la partie `(app)` si l'utilisateur possède un token ;
-- un indicateur de chargement pendant la lecture du token enregistré.
-
-### Espace d'authentification
-
-```text
-app/auth/
-├── authindex.tsx
-├── login.tsx
-└── register.tsx
-```
-
-Cet espace contient :
-
-- l'écran de choix entre connexion et inscription ;
-- l'écran de connexion ;
-- l'écran d'inscription.
-
-### Espace application
-
-```text
-app/(app)/
-└── appindex.tsx
-```
-
-Cet espace correspond à la partie accessible après connexion.
-
-L'écran actuel affiche simplement :
-
-```text
-Bienvenue dans JamLog 🎸
-```
+This keeps the API modular and easier to extend as new music-related features are added.
 
 ---
 
-## Communication avec le backend
+## Main server entry point
 
-Le frontend est prévu pour communiquer avec le backend du dépôt `JamLog`.
+The Express app is initialized in:
 
-Le client HTTP est configuré dans :
-
-```text
-src/api/api.ts
+```js
+src/index.js
 ```
 
-La bibliothèque Axios est utilisée pour effectuer les appels HTTP.
+It currently:
 
-### Adresse actuellement configurée
-
-L'adresse actuellement présente dans la configuration Axios est :
-
-```text
-http://192.168.100.145:3000
-```
-
-Cette adresse correspond à une configuration réseau locale et dépend de la machine qui héberge le backend.
-
-Elle peut devoir être adaptée selon :
-
-- l'adresse IP locale de l'ordinateur ;
-- l'utilisation d'un téléphone physique ;
-- l'utilisation d'un émulateur ;
-- l'utilisation du web ;
-- le réseau Wi-Fi utilisé.
+- creates the Express app;
+- enables JSON parsing;
+- enables CORS;
+- registers the `/auth` routes;
+- starts the server on port `3000`.
 
 ---
 
-## Authentification
+## Authentication
 
-La gestion de l'authentification repose sur un contexte React.
-
-Le fichier principal est :
+The backend includes authentication routes under:
 
 ```text
-src/context/authContext.tsx
+/auth
 ```
 
-Le contexte gère :
+Current routes appear to include:
 
-- le token courant ;
-- l'état de chargement ;
-- la connexion ;
-- la déconnexion ;
-- la récupération du token au démarrage.
+- `POST /auth/register`
+- `POST /auth/login`
 
-### Connexion
+The project uses:
 
-Le formulaire de connexion se trouve dans :
+- `bcrypt` for password hashing;
+- `jsonwebtoken` for JWT generation/validation.
 
-```text
-app/auth/login.tsx
-```
-
-Il envoie une requête au backend :
-
-```http
-POST /auth/login
-```
-
-Corps envoyé :
-
-```json
-{
-  "email": "musicien@example.com",
-  "password": "mot-de-passe"
-}
-```
-
-Lorsque le backend renvoie un token :
-
-1. le token est sauvegardé ;
-2. le contexte d'authentification est mis à jour ;
-3. l'utilisateur est redirigé vers l'espace connecté.
-
-### Inscription
-
-Le formulaire d'inscription se trouve dans :
-
-```text
-app/auth/register.tsx
-```
-
-Il envoie :
-
-```http
-POST /auth/register
-```
-
-Corps envoyé :
-
-```json
-{
-  "email": "musicien@example.com",
-  "username": "musicien",
-  "password": "mot-de-passe"
-}
-```
-
-Après une inscription réussie, l'utilisateur est redirigé vers l'écran de connexion.
+This is a standard authentication setup for a web app that needs session-like access control.
 
 ---
 
-## Stockage du token
+## Database
 
-Le service :
+The project uses Prisma with PostgreSQL.
 
-```text
-src/services/tokenService.ts
-```
+This means the app is designed to be scalable and production-ready compared to a simple JSON-based backend.
 
-utilise deux mécanismes selon la plateforme.
+The Prisma setup is intended to support future data models for:
 
-### Web
-
-Le token est stocké dans :
-
-```text
-localStorage
-```
-
-### Android et iOS
-
-Le token est stocké avec :
-
-```text
-expo-secure-store
-```
-
-Cette séparation permet d'utiliser un stockage adapté à chaque environnement.
-
-La clé utilisée est :
-
-```text
-jamlog_token
-```
+- users;
+- bands or groups;
+- projects;
+- songs;
+- events;
+- recordings;
+- uploaded files;
+- team members.
 
 ---
 
-## Services disponibles
+## Current status
 
-### `authService.ts`
+### Implemented
 
-Ce service contient des fonctions prévues pour :
+- Express backend setup
+- CORS configuration
+- authentication routes
+- JSON request parsing
+- Prisma installation and configuration
+- PostgreSQL-ready architecture
+- JWT-based auth pattern
+- environment variable support
 
-- se connecter ;
-- s'inscrire.
+### Still in progress / not yet fully implemented
 
-Fonctions principales :
+- full user profiles
+- project management flows
+- tracks/song management
+- event management
+- recording session management
+- file storage
+- advanced music collaboration logic
+- production-grade validation
+- full API documentation
+- testing and QA
 
-```ts
-login(email, password)
-register(email, username, password)
-```
+---
 
-### `tokenService.ts`
+## Environment configuration
 
-Ce service contient les fonctions :
+The app uses environment variables through `dotenv`.
 
-```ts
-saveToken(token)
-getToken()
-removeToken()
-```
+Typical configuration should include:
 
-### `authContext.tsx`
+- database URL
+- JWT secret
+- CORS origin
+- port settings
 
-Ce contexte rend disponibles :
-
-```ts
-token
-login
-logout
-loading
-```
+You should set these in a `.env` file before running the app in a real environment.
 
 ---
 
 ## Installation
 
-Cloner le dépôt puis accéder au dossier de l'application :
+Clone the repository:
 
 ```bash
-git clone https://github.com/bryte-dev/JamLogFrontEnd.git
-cd JamLogFrontEnd/JamLog-frontend
+git clone https://github.com/bryte-dev/JamLog.git
+cd JamLog
 npm install
 ```
 
 ---
 
-## Lancement
+## Run locally
 
-### Démarrer Expo
+Start the backend:
 
 ```bash
-npm start
+npm run dev
 ```
 
-### Android
+or
 
 ```bash
-npm run android
+node src/index.js
 ```
 
-### iOS
+The API runs by default on:
 
-```bash
-npm run ios
-```
-
-### Web
-
-```bash
-npm run web
-```
-
-### Vérification du code
-
-```bash
-npm run lint
+```text
+http://localhost:3000
 ```
 
 ---
 
-## Configuration avec le backend
+## Notes
 
-Pour utiliser le frontend avec le backend JamLog :
-
-1. démarrer le backend ;
-2. vérifier que PostgreSQL est disponible ;
-3. vérifier l'adresse IP utilisée par le backend ;
-4. vérifier que le frontend utilise cette même adresse ;
-5. vérifier la configuration CORS du backend ;
-6. lancer Expo sur le web, un émulateur ou un appareil physique.
-
-Le frontend appelle actuellement les endpoints suivants :
-
-```text
-POST /auth/register
-POST /auth/login
-```
-
-Ces endpoints correspondent aux routes d'authentification présentes dans le backend.
-
----
-
-## Flux actuel de l'application
-
-Le flux principal est le suivant :
-
-```text
-Lancement de l'application
-    ↓
-Lecture du token enregistré
-    ↓
-Token absent ?
-    ├── Oui → écran d'authentification
-    │            ├── Connexion
-    │            └── Inscription
-    │
-    └── Non → espace de l'application
-```
-
-### Flux d'inscription
-
-```text
-Écran Register
-    ↓
-POST /auth/register
-    ↓
-Utilisateur créé dans le backend
-    ↓
-Redirection vers Login
-```
-
-### Flux de connexion
-
-```text
-Écran Login
-    ↓
-POST /auth/login
-    ↓
-Réception du JWT
-    ↓
-Stockage du token
-    ↓
-Mise à jour du AuthContext
-    ↓
-Redirection vers l'espace connecté
-```
-
----
-
-## État actuel du projet
-
-### Fonctionnalités présentes
-
-- projet Expo initialisé ;
-- application React Native ;
-- configuration TypeScript ;
-- navigation avec Expo Router ;
-- écran de choix Login/Register ;
-- formulaire d'inscription ;
-- formulaire de connexion ;
-- communication Axios avec le backend ;
-- stockage du token ;
-- contexte global d'authentification ;
-- redirection selon l'état de connexion ;
-- écran d'accueil après connexion ;
-- compatibilité prévue avec le web, Android et iOS.
-
-### Fonctionnalités encore incomplètes
-
-- tableau de bord réel ;
-- affichage du profil utilisateur ;
-- création et gestion de projets ;
-- ajout et gestion de membres ;
-- création d'événements ;
-- gestion des morceaux ;
-- suivi de la progression des morceaux ;
-- ajout et consultation de fichiers ;
-- partage de ressources ;
-- appels aux routes métier du backend ;
-- gestion complète de la déconnexion dans l'interface ;
-- affichage des erreurs à l'utilisateur ;
-- validation avancée des formulaires ;
-- gestion des états de chargement des requêtes ;
-- design final de l'application ;
-- tests automatisés ;
-- configuration de production.
-
----
-
-## Limitations connues
-
-Le frontend doit être considéré comme une première base d'application.
-
-### Adresse réseau codée en dur
-
-L'adresse du backend est actuellement définie directement dans le client Axios :
-
-```text
-http://192.168.100.145:3000
-```
-
-Cette configuration fonctionne uniquement si cette adresse correspond réellement à la machine hébergeant le backend et si celle-ci est accessible depuis l'environnement Expo.
-
-### Variable `.env`
-
-Un fichier `.env` contient une variable :
-
-```dotenv
-API_URL=http://localhost:3000
-```
-
-Cependant, la configuration Axios utilise actuellement une adresse écrite directement dans le code. La variable `API_URL` n'est donc pas utilisée par le client HTTP dans l'état actuel du projet.
-
-### Gestion des erreurs
-
-Les erreurs de connexion et d'inscription sont actuellement envoyées dans la console avec `console.error`.
-
-Elles ne sont pas encore affichées clairement dans l'interface utilisateur.
-
-### Protection des écrans
-
-La navigation dépend de la présence d'un token stocké localement.
-
-Le frontend ne vérifie pas encore automatiquement si le token est expiré ou invalide auprès du backend.
-
-### Interface principale
-
-L'espace connecté est encore minimal. Il s'agit actuellement d'une page de bienvenue et non d'une interface complète de gestion musicale.
-
----
-
-## Relation avec le backend
-
-Le frontend et le backend sont conçus pour fonctionner ensemble.
-
-### Dépôt backend
-
-```text
-bryte-dev/JamLog
-```
-
-### Dépôt frontend
+This backend is designed to work alongside the frontend repository:
 
 ```text
 bryte-dev/JamLogFrontEnd
 ```
 
-### Compatibilité actuelle
+The frontend already targets auth routes such as:
 
-Les routes d'authentification sont alignées :
+- `POST /auth/register`
+- `POST /auth/login`
 
-| Fonction | Frontend | Backend |
-|---|---|---|
-| Inscription | `POST /auth/register` | `POST /auth/register` |
-| Connexion | `POST /auth/login` | `POST /auth/login` |
-
-Les données envoyées correspondent également :
-
-- email ;
-- username pour l'inscription ;
-- password.
-
-La connexion complète dépend toutefois de la configuration réseau locale et de la disponibilité du backend.
+This means the backend and frontend are intended to be used together as a complete application.
 
 ---
 
-## Organisation prévue à terme
+## Roadmap
 
-L'application pourrait progressivement évoluer vers une organisation de ce type :
+Future development is expected to include:
 
-```text
-Authentification
-    ├── Inscription
-    ├── Connexion
-    └── Profil
-
-Projets
-    ├── Liste des projets
-    ├── Détail d'un projet
-    ├── Membres
-    └── Paramètres
-
-Morceaux
-    ├── Liste des morceaux
-    ├── Progression
-    ├── Détails
-    └── Fichiers associés
-
-Événements
-    ├── Calendrier
-    ├── Répétitions
-    ├── Concerts
-    └── Sessions d'enregistrement
-
-Fichiers
-    ├── Documents
-    ├── Audios
-    ├── Images
-    └── Ressources partagées
-```
-
-Cette organisation représente la direction fonctionnelle du projet et non l'ensemble des fonctionnalités actuellement disponibles.
+- user dashboard
+- project creation and editing
+- band/group management
+- song management
+- rehearsal scheduling
+- concert tracking
+- recording session logging
+- resource sharing
+- file uploads and metadata
+- authorizations and permissions
+- API documentation and tests
 
 ---
 
-## Résumé
+## Summary
 
-JamLog Frontend est une application Expo / React Native / TypeScript servant d'interface utilisateur au projet JamLog.
+JamLog is a backend API focused on helping musicians organize their work and creative projects.
 
-Le frontend dispose déjà d'un premier flux utilisable :
+It is still an early-stage project, but the current structure already shows a clear direction:
 
-```text
-Inscription
-    ↓
-Connexion
-    ↓
-Réception du token JWT
-    ↓
-Stockage local sécurisé
-    ↓
-Accès à l'espace connecté
-```
-
-Le projet constitue actuellement une base de navigation et d'authentification. Les fonctionnalités principales liées à l'organisation musicale restent à développer autour du backend et de son modèle de données.
+- structured Express API
+- Prisma + PostgreSQL support
+- JWT authentication
+- modular backend architecture
+- readiness for a larger music management platform
